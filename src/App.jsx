@@ -39,12 +39,14 @@ export default function App() {
   });
   // Handler for safety checkbox toggle(persistent)
   const handleToggleStatus = (robotId, field) => {
-  setRobots(robots.map(robot => {
-    if (robot.id === robotId) {
-      return { ...robot, [field]: !robot[field] };
-    }
-    return robot;
-  }));
+    setRobots(
+      robots.map((robot) => {
+        if (robot.id === robotId) {
+          return { ...robot, [field]: !robot[field] };
+        }
+        return robot;
+      })
+    );
   };
   // Sync state to local storage
   useEffect(() => {
@@ -575,10 +577,10 @@ export default function App() {
                             Weight Class
                           </th>
                           <th className="border-b border-r border-slate-700 px-2 py-3 font-semibold">
-                            Safety Check
+                            Pit Table
                           </th>
                           <th className="border-b border-r border-slate-700 px-2 py-3 font-semibold">
-                            Pit Table
+                            Safety Check
                           </th>
                           <th className="border-b border-r border-slate-700 px-2 py-3 font-semibold">
                             Fees Paid
@@ -622,42 +624,50 @@ export default function App() {
                               <td className="border-b border-r border-slate-800 px-4 py-3 text-slate-300">
                                 {robot.weightClass}
                               </td>
-                              {/* Safety Check Checkbox */}
-                               <td className="border-b border-r border-slate-800 px-4 py-3 text-center">
-                                 <input
-                                  type="checkbox"
-                                  checked={robot.safetyCheck || false}
-                                  onChange={() => handleToggleStatus(robot.id, 'safetyCheck')}
-                                  className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-                                />
-                              </td>
                               {/* Pit Table */}
                               <td className="border-b border-r border-slate-800 px-4 py-3">
                                 {robot.pitTable || 'Unassigned'}
+                              </td>
+                              {/* Safety Check Checkbox */}
+                              <td className="border-b border-r border-slate-800 px-4 py-3 text-center">
+                                <input
+                                  type="checkbox"
+                                  checked={robot.safetyCheck || false}
+                                  onChange={() =>
+                                    handleToggleStatus(robot.id, 'safetyCheck')
+                                  }
+                                  className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                />
                               </td>
                               {/* Fees Paid Checkbox */}
                               <td className="border-b border-r border-slate-800 px-4 py-3 text-center">
                                 <input
                                   type="checkbox"
                                   checked={robot.feesPaid || false}
-                                  onChange={() => handleToggleStatus(robot.id, 'feesPaid')}
+                                  onChange={() =>
+                                    handleToggleStatus(robot.id, 'feesPaid')
+                                  }
                                   className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                                 />
-                               </td>
+                              </td>
                               {/* Check-In Checkbox */}
                               <td className="border-b border-r border-slate-800 px-4 py-3 text-center">
                                 <input
-                                type="checkbox"
-                                checked={robot.checkedIn || false}
-                                onChange={() => handleToggleStatus(robot.id, 'checkedIn')}
-                                className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-                               />
+                                  type="checkbox"
+                                  checked={robot.checkedIn || false}
+                                  onChange={() =>
+                                    handleToggleStatus(robot.id, 'checkedIn')
+                                  }
+                                  className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                />
                               </td>
                               <td className="border-b border-r border-slate-800 px-4 py-3 text-center">
                                 <input
                                   type="checkbox"
                                   checked={robot.weighedIn || false}
-                                  onChange={() => handleToggleStatus(robot.id, 'weighedIn')}
+                                  onChange={() =>
+                                    handleToggleStatus(robot.id, 'weighedIn')
+                                  }
                                   className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                                 />
                               </td>
@@ -679,7 +689,9 @@ export default function App() {
                                 <input
                                   type="checkbox"
                                   checked={robot.postponed || false}
-                                  onChange={() => handleToggleStatus(robot.id, 'postponed')}
+                                  onChange={() =>
+                                    handleToggleStatus(robot.id, 'postponed')
+                                  }
                                   className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                                 />
                               </td>
@@ -699,7 +711,8 @@ export default function App() {
                         onClick={() => setDashboardView('dashboard')}
                         className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-white mb-3 transition-colors"
                       >
-                        <ArrowLeft className="w-3.5 h-3.5" /> Back to Weight Classes
+                        <ArrowLeft className="w-3.5 h-3.5" /> Back to Weight
+                        Classes
                       </button>
                       <h3 className="text-xl font-bold text-white">
                         {selectedWeightClass} Robots
