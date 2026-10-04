@@ -735,61 +735,76 @@ export default function App() {
                       No robots registered in this weight class yet.
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {selectedClassRobots.map((robot) => (
-                        <div
-                          key={robot.id}
-                          className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between"
-                        >
-                          <div>
-                            <div className="flex justify-between items-start mb-3">
-                              <div>
-                                <h4 className="font-bold text-base text-white">
-                                  {robot.name}
-                                </h4>
-                                <p className="text-xs text-slate-400">
-                                  Team: {robot.team}
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                {getStatusBadge(robot.status)}
-                                <button
-                                  onClick={() => handleDeleteRobot(robot.id)}
-                                  className="text-slate-600 hover:text-rose-400 p-1 rounded transition-colors"
-                                  title="Delete Robot"
-                                >
-                                  <X className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </div>
-
-                            <div className="space-y-1 my-3 text-xs">
-                              <div className="flex justify-between text-slate-300 py-1">
-                                <span className="text-slate-500">Waiver:</span>
-                                <span
-                                  className={`font-semibold ${robot.safetyPassed ? 'text-emerald-400' : 'text-rose-400'}`}
-                                >
-                                  {robot.safetyPassed ? 'Signed' : 'PENDING'}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="mt-3 pt-3 border-t border-slate-800">
-                            <button
-                              onClick={() => handleToggleSafety(robot.id)}
-                              className={`w-full text-xs font-medium py-1.5 rounded-lg border transition-colors flex items-center justify-center gap-1 ${
-                                robot.safetyPassed
-                                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
-                                  : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
-                              }`}
+                    <div className="overflow-x-auto rounded-xl border border-slate-800">
+                      <table className="w-full min-w-160 border-collapse text-left text-xs">
+                        <thead className="bg-slate-950 text-slate-400">
+                          <tr>
+                            <th className="border-b border-r border-slate-800 px-4 py-3 font-semibold">
+                              Robot
+                            </th>
+                            <th className="border-b border-r border-slate-800 px-4 py-3 font-semibold">
+                              Pit Table
+                            </th>
+                            <th className="border-b border-r border-slate-800 px-4 py-3 font-semibold">
+                              Waiver Status
+                            </th>
+                            <th className="border-b border-r border-slate-800 px-4 py-3 font-semibold">
+                              Robot Status
+                            </th>
+                            <th className="border-b border-slate-800 px-4 py-3 text-center font-semibold">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedClassRobots.map((robot, index) => (
+                            <tr
+                              key={robot.id}
+                              className={`${index % 2 === 0 ? 'bg-slate-900' : 'bg-slate-900/60'} hover:bg-indigo-500/5`}
                             >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              {robot.safetyPassed ? 'Signed' : 'Sign'}
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                              <td className="border-b border-r border-slate-800 px-4 py-3">
+                                <p className="font-semibold text-white">
+                                  {robot.name}
+                                </p>
+                                <p className="mt-1 text-slate-500">
+                                  {robot.team}
+                                </p>
+                              </td>
+                              <td className="border-b border-r border-slate-800 px-4 py-3 text-slate-300">
+                                {robot.pitTable || 'Unassigned'}
+                              </td>
+                              <td className="border-b border-r border-slate-800 px-4 py-3">
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleSafety(robot.id)}
+                                  className={`inline-flex items-center gap-2 rounded border px-2.5 py-1.5 font-semibold transition-colors ${
+                                    robot.safetyPassed
+                                      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+                                      : 'border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700'
+                                  }`}
+                                >
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                                  {robot.safetyPassed ? 'Signed' : 'Pending'}
+                                </button>
+                              </td>
+                              <td className="border-b border-r border-slate-800 px-4 py-3">
+                                {getStatusBadge(robot.status)}
+                              </td>
+                              <td className="border-b border-slate-800 px-4 py-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteRobot(robot.id)}
+                                  className="rounded p-1 text-slate-500 transition-colors hover:text-rose-400"
+                                  title="Delete Robot"
+                                  aria-label={`Delete ${robot.name}`}
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   )}
                 </section>
