@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTimer } from 'react-timer-hook';
 import {
   ShieldAlert,
   Plus,
@@ -17,7 +18,13 @@ import {
   Pencil,
   ChevronLeft,
   ChevronRight,
+  Play,
+  Pause,
+  RotateCcw,
 } from 'lucide-react';
+
+const getTimerExpiry = (durationSeconds) =>
+  new Date(Date.now() + durationSeconds * 1000);
 
 export default function App() {
   // --- STATE MANAGEMENT ---
@@ -25,6 +32,40 @@ export default function App() {
   const [dashboardView, setDashboardView] = useState('dashboard');
   const [selectedWeightClass, setSelectedWeightClass] = useState('');
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [timerMinutes, setTimerMinutes] = useState(3);
+  const [timerSecondsInput, setTimerSecondsInput] = useState(0);
+  const [timerExpiryTimestamp] = useState(
+    () => new Date(Date.now() + 3 * 60 * 1000)
+  );
+  const [timerStarted, setTimerStarted] = useState(false);
+  const [timerPaused, setTimerPaused] = useState(false);
+  const {
+    seconds,
+    minutes,
+    hours,
+    isRunning,
+    pause,
+    resume,
+    restart,
+  } = useTimer({ expiryTimestamp: timerExpiryTimestamp, autoStart: false });
+
+  const timerDurationSeconds = timerMinutes * 60 + timerSecondsInput;
+  const resetTimer = (durationSeconds = timerDurationSeconds) => {
+    restart(getTimerExpiry(durationSeconds), false);
+    setTimerStarted(false);
+    setTimerPaused(false);
+  };
+  const startTimer = () => {
+    if (timerPaused) {
+      resume();
+      setTimerPaused(false);
+      return;
+    }
+    if (timerDurationSeconds > 0) {
+      restart(getTimerExpiry(timerDurationSeconds), true);
+      setTimerStarted(true);
+    }
+  };
 
   // Events State (Persisted)
   const [events, setEvents] = useState(() => {
@@ -344,6 +385,19 @@ export default function App() {
               >
                 <CheckCircle2 className="w-4 h-4 text-slate-400 shrink-0" />
                 {!isCollapsed && <span>Safety</span>}
+              </button>
+
+              <button
+                onClick={() => setDashboardView('Timers')}
+                title="Timers"
+                className={`w-full flex items-center gap-2.5 py-2 rounded-lg text-xs font-medium transition-colors ${
+                  dashboardView === 'Timers'
+                    ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                } ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
+              >
+                <Clock className="w-4 h-4 text-slate-400 shrink-0" />
+                {!isCollapsed && <span>Timers</span>}
               </button>
             </nav>
           </div>
@@ -700,6 +754,127 @@ export default function App() {
                         )}
                       </tbody>
                     </table>
+                  </div>
+                </section>
+              ) : dashboardView === 'Timers' ? (
+                <section>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className="text-xl font-bold text-white">
+                        Event Timer
+                      </h3>
+                      <p className="mt-1 text-xs text-slate-400">
+                        Set a countdown for the active event.
+                      </p>
+                    </div >
+                  </div>
+                  <div className="max-w-3xl rounded-xl border border-slate-800 bg-slate-900/80 p-6 shadow-lg sm:p-8">
+                    <div className="mb-6 flex flex-wrap gap-2">
+                      {[
+                        { label: '1 min', seconds: 60 },
+                        { label: '2 min', seconds: 120 },
+                        { label: '5 min', seconds: 300 },
+                      ].map((preset) => (
+                        <button
+                          key={preset.seconds}
+                          type="button"
+                          onClick={() => {
+                            setTimerMinutes(Math.floor(preset.seconds / 60));
+                            setTimerSecondsInput(preset.seconds % 60);
+                            resetTimer(preset.seconds);
+                          }}
+                          className="rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:border-indigo-500/50 hover:text-white"
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div
+                      className="mb-8 rounded-lg border border-slate-800 bg-slate-950 px-4 py-8 text-center"
+                      aria-live="off"
+                      aria-label={`Time remaining: ${hours} hours, ${minutes} minutes, ${seconds} seconds`}
+                    >
+                      <p className="font-mono text-6xl font-bold tabular-nums text-white sm:text-7xl">
+                        {[hours, minutes, seconds]
+                          .map((value) => String(value).padStart(2, '0'))
+                          .join(':')}
+                      </p>
+                      <p className="mt-3 text-xs font-medium uppercase text-slate-500">
+                        {timerStarted && !isRunning && !timerPaused
+                          ? 'Time complete'
+                          : timerPaused
+                            ? 'Paused'
+                            : isRunning
+                              ? 'Running'
+                              : 'Ready'}
+                      </p>
+                    </div>
+
+                    <div className="mb-6 grid grid-cols-2 gap-3">
+                      <label className="text-xs font-medium text-slate-400">
+                        Minutes
+                        <input
+                          type="number"
+                          min="0"
+                          max="99"
+                          value={timerMinutes}
+                          disabled={isRunning || timerPaused}
+                          onChange={(event) =>
+                            setTimerMinutes(
+                              Math.min(99, Math.max(0, Number(event.target.value)))
+                            )
+                          }
+                          className="mt-1.5 w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none disabled:opacity-50"
+                        />
+                      </label>
+                      <label className="text-xs font-medium text-slate-400">
+                        Seconds
+                        <input
+                          type="number"
+                          min="0"
+                          max="59"
+                          value={timerSecondsInput}
+                          disabled={isRunning || timerPaused}
+                          onChange={(event) =>
+                            setTimerSecondsInput(
+                              Math.min(59, Math.max(0, Number(event.target.value)))
+                            )
+                          }
+                          className="mt-1.5 w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none disabled:opacity-50"
+                        />
+                      </label>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        type="button"
+                        onClick={startTimer}
+                        disabled={isRunning || timerDurationSeconds === 0}
+                        className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Play className="h-4 w-4" />
+                        {timerPaused ? 'Resume' : 'Start'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          pause();
+                          setTimerPaused(true);
+                        }}
+                        disabled={!isRunning}
+                        className="inline-flex items-center gap-2 rounded-md border border-slate-700 bg-slate-800 px-4 py-2.5 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Pause className="h-4 w-4" /> Pause
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => resetTimer()}
+                        className="inline-flex items-center gap-2 rounded-md border border-slate-700 bg-slate-800 px-4 py-2.5 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-700"
+                      >
+                        <RotateCcw className="h-4 w-4" /> Reset
+                      </button>
+                    </div>
                   </div>
                 </section>
               ) : dashboardView === 'robots' ? (
