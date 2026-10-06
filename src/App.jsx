@@ -25,6 +25,7 @@ import {
 
 const getTimerExpiry = (durationSeconds) =>
   new Date(Date.now() + durationSeconds * 1000);
+const ROBOT_STATUS_CYCLE = ['QUEUED', 'ON_DECK', 'REPAIRING'];
 
 export default function App() {
   // --- STATE MANAGEMENT ---
@@ -86,6 +87,18 @@ export default function App() {
           return { ...robot, [field]: !robot[field] };
         }
         return robot;
+      })
+    );
+  };
+  const handleCycleRobotStatus = (robotId) => {
+    setRobots((currentRobots) =>
+      currentRobots.map((robot) => {
+        if (robot.id !== robotId) return robot;
+
+        const nextStatusIndex =
+          (ROBOT_STATUS_CYCLE.indexOf(robot.status) + 1) %
+          ROBOT_STATUS_CYCLE.length;
+        return { ...robot, status: ROBOT_STATUS_CYCLE[nextStatusIndex] };
       })
     );
   };
@@ -282,13 +295,24 @@ export default function App() {
       case 'REPAIRING':
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2.5 py-0.5 text-xs font-semibold text-rose-400 border border-rose-500/20">
-            <AlertTriangle className="w-3 h-3" /> Pit Repair
+            <AlertTriangle className="w-3 h-3" /> Holds
           </span>
         );
       default:
         return null;
     }
   };
+  const getRobotStatusToggle = (robot) => (
+    <button
+      type="button"
+      onClick={() => handleCycleRobotStatus(robot.id)}
+      title="Cycle status: Queued, On Deck, Holds"
+      aria-label={`Change ${robot.name} status`}
+      className="inline-flex cursor-pointer rounded-full focus-visible:ring-2 focus-visible:ring-indigo-400"
+    >
+      {getStatusBadge(robot.status) ?? getStatusBadge('QUEUED')}
+    </button>
+  );
 
   return (
     <div className="flex h-screen bg-slate-950 text-slate-100 font-sans antialiased overflow-hidden">
@@ -649,6 +673,9 @@ export default function App() {
                             Signed Waiver
                           </th>
                           <th className="border-b border-r border-slate-700 px-2 py-3 font-semibold">
+                            Queue Status
+                          </th>
+                          <th className="border-b border-r border-slate-700 px-2 py-3 font-semibold">
                             Postponed
                           </th>
                         </tr>
@@ -657,7 +684,7 @@ export default function App() {
                         {activeRobots.length === 0 ? (
                           <tr>
                             <td
-                              colSpan="4"
+                              colSpan="11"
                               className="px-4 py-10 text-center text-slate-500"
                             >
                               No robots registered for this event yet.
@@ -725,7 +752,8 @@ export default function App() {
                                   className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                                 />
                               </td>
-                              <td className="border-b border-slate-800 px-4 py-3">
+                              {/* Signed Waiver */}
+                              <td className="border-b border-r border-slate-800 px-4 py-3">
                                 <button
                                   type="button"
                                   onClick={() => handleToggleSafety(robot.id)}
@@ -736,8 +764,11 @@ export default function App() {
                                   }`}
                                 >
                                   <CheckCircle2 className="h-3.5 w-3.5" />
-                                  {robot.safetyPassed ? 'Sighned' : 'Pending'}
+                                  {robot.safetyPassed ? 'Signed' : 'Pending'}
                                 </button>
+                              </td>
+                              <td className="border-b border-r border-slate-800 px-4 py-3">
+                                {getRobotStatusToggle(robot)}
                               </td>
                               <td className="border-b border-slate-800 px-4 py-3">
                                 <input
@@ -963,7 +994,7 @@ export default function App() {
                                 </button>
                               </td>
                               <td className="border-b border-r border-slate-800 px-4 py-3">
-                                {getStatusBadge(robot.status)}
+                                {getRobotStatusToggle(robot)}
                               </td>
                               <td className="border-b border-slate-800 px-4 py-3 text-center">
                                 <button
